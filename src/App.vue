@@ -3,6 +3,7 @@
     <header>
       <img src="./assets/logo.svg" alt="Logo Dev Finance">
     </header>
+
     <main class="container">
       <section id="balance">
         <h2 class="sr-only" >Balanço</h2>
