@@ -38,11 +38,28 @@ const store = new Vuex.Store({
       state.transactions = state.transactions.filter(transaction => transaction.id != id)
     },
     UPDATE_BALANCE(state){
+      function income(){
+        state.balance.income = state.transactions.reduce((income, transaction) => (income + transaction.amount), 0)
+      }
+
+      function expense(){
+        state.balance.expense = state.transactions.reduce((expense, transaction) => (expense + transaction.amount), 0)
+      }
+
+      function total(){
+        state.balance.total = state.balance.income + state.balance.expense
+      }
+
       state.transactions.forEach(transaction => {
-        state.balance.income += transaction.amount
-        console.log(transaction.amount)
+        if(transaction.amount > 0){
+          income()
+          total()
+        } else if(transaction.amount < 0){
+          expense()
+        }
       })
 
+      
     },
     OPEN_MODAL(state){
       state.isModalVisible = true
