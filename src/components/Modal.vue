@@ -6,24 +6,26 @@
         <form action="">
           <div class="input-group">
             <label class="sr-only" for="description">Descrição</label>
-            <input 
+            <input
+              :class="validateInput"
               type="text"
               name="description" 
               id="description"
               placeholder="Descrição"
-              v-model="transaction.description"              
+              v-model="transaction.description"          
             />
           </div>  
           <div class="input-group">
             <label class="sr-only" for="amount">Valor</label>
             <input 
+              :class="validateInput"
               type="number" 
               name="amount"
               step="0.01"
               autocomplete="off"
               id="amount"
-              placeholder="0,00"
-              v-model="transaction.amount"          
+              placeholder="0,00"   
+              v-model="transaction.amount"       
             />
             <small class="help" >
               Use o sinal - (negativo) para despesas e , (vírgula) para casas decimais
@@ -32,6 +34,7 @@
           <div class="input-group">
             <label class="sr-only" for="date">Data</label>
             <input 
+              :class="validateInput"
               type="date" 
               name="date" 
               id="date"
@@ -39,8 +42,8 @@
             />
           </div>
           <div class="input-group actions">
-            <a href="#" @click="closeModal" class="button cancel">Cancelar</a>
-            <button @click="[ADD_TRANSACTION(), closeModal(),UPDATE_BALANCE()]" type="button" >Salvar</button>
+            <a href="#" @click="close" class="button cancel">Cancelar</a>
+            <button @click='addTransaction' type="button" >Salvar</button>
           </div>
         </form> 
       </div>    
@@ -48,57 +51,40 @@
   </div>
 </template>
 <script>
-  import { mapState, mapActions } from 'vuex';
-  //import { formatCurrency } from '../utils/formatCurrency'
-
   export default {
     name: 'Modal',
     data() {
       return {
-        count: 0,
         transaction: {
-          id: '',
           description: '',
           amount: '',
           date: ''
-        }
+        },
+        validateInput: 'ok'
       }
-    },
-    computed: {
-      ...mapState({
-        transactions: state => state.transactions,
-        isModalVisible: state => state.isModalVisible,
-        balance: state => state.balance
-      })
     },
     methods: {
       close(){
-        this.$emit('close');
-      },
-      ...mapActions([
-        'addTransaction',
-        'closeModal',
-        'updateBalance'
-      ]),
-      ADD_TRANSACTION(){
-        this.addTransaction({
-          id: this.count++,
-          description: this.transaction.description,
-          amount: Number(this.transaction.amount),
-          date: this.transaction.date
-        })
+        this.$emit('close')
 
-        this.transaction = {
-          id: '',
-          description: '',
-          amount: '',
-          date: ''
-        }
+        this.transaction.description = ''
+        this.transaction.amount = ''
+        this.transaction.date = ''
       },
-      UPDATE_BALANCE(){
-        this.updateBalance()
+      addTransaction(){
+        for(let prop in this.transaction){
+          if(this.transaction[prop] == ''){
+            alert('Preencha todos os campos')
+
+            return false
+          }
+        }
+
+        this.validateInput = 'ok'
+        this.$emit('addTransaction', this.transaction)
+        this.close()
       }
-    },
+    }
   }
 </script>
 <style scoped>
@@ -200,5 +186,12 @@
      width: 48%;
   }
 
+  #description.ok, #date.ok, #amount.ok {
+    border: none 
+  }
+
+  #description.error, #date.error, #amount.error {
+    border: 1px solid red 
+  }
 
 </style>

@@ -13,21 +13,21 @@
             <span>Entradas</span>
             <img src="./assets/income.svg" alt="Imagem de entradas" />
           </h3>
-          <p>{{ balance.income }}</p>
+          <p>R$ {{this.income.toFixed(2)}}</p>
         </div>
         <div class="card">
           <h3>
             <span>Saídas</span>
             <img src="./assets/expense.svg" alt="Imagem de saídas" />
           </h3>
-          <p>{{ balance.expense }}</p>
+          <p>R$ {{this.expense.toFixed(2)}}</p>
         </div>
         <div class="card total">
           <h3>
             <span>Total</span>
             <img src="./assets/total.svg" alt="Imagem de total" />
           </h3>
-          <p>{{ balance.total }}</p>
+          <p>R$ {{this.balance.toFixed(2)}}</p>
         </div>
       </section>
 
@@ -46,16 +46,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="transaction in transactions" :key="transaction.id">
-              <td class="description">{{ transaction.description }}</td>
+            <tr v-for="(transaction, index) in transformTransactions" :key="index">
+              <td class="description">{{transaction.description}}</td>
               <td v-if="transaction.amount < 0" class="expanse">
-                {{ transaction.amount }}
+                R$ {{transaction.amount}}
               </td>
-              <td v-else class="income">{{ transaction.amount }}</td>
-              <td class="date">{{ transaction.date }}</td>
+              <td v-else class="income">
+                R$ {{transaction.amount}}
+              </td>
+              <td class="date">{{transaction.date}}</td>
               <td>
                 <img
-                  @click="deleteTransaction(transaction.id)"
+                  @click="removeTransaction(index)"
                   src="./assets/minus.svg"
                   alt="Remover transação"
                 />
@@ -70,32 +72,79 @@
       <p>dev.finance$</p>
     </footer>
     
-		<Modal v-show="isModalVisible" />
+		<Modal @addTransaction='addTransaction' @close='close' v-show="isModalVisible" />
   </div>
 </template>
 
 <script>
 import Modal from "./components/Modal";
-import { mapState, mapActions } from "vuex";
 
 export default {
   name: "App",
   components: {
     Modal,
   },
-  computed: {
-    ...mapState({
-      transactions: (state) => state.transactions,
-      isModalVisible: (state) => state.isModalVisible,
-      balance: (state) => state.balance,
-    }),
+  computed:{
+    transformTransactions(){
+      let transactions = [...this.transactions]
+      transactions = transactions.reverse()
+      return transactions
+    }
   },
-  data() {
-    return {};
+  data(){
+    return {
+      isModalVisible: false,
+      transactions: [],
+      income: 0,
+      expense: 0,
+      balance: 0
+    }
   },
   methods: {
-    ...mapActions(["deleteTransaction", "openModal"]),
-  },
+    openModal(){
+      this.isModalVisible = true
+    },
+    close(){
+      this.isModalVisible = false
+    },
+    addTransaction(payload){
+      this.transactions.push({
+        description: payload.description,
+        amount: Number(payload.amount),
+        date: payload.date
+      })
+      
+      if(payload.amount > 0){
+        this.updateIncome(Number(payload.amount))
+      } else if(payload.amount < 0){
+        this.updateExpense(Number(payload.amount))
+      }
+    },
+    removeTransaction(index){
+      if(Number(this.transactions[index].amount) > 0){
+        this.income -= Number(this.transactions[index].amount)
+      } else if (Number(this.transactions[index].amount) < 0){
+        this.expense -= Number(this.transactions[index].amount)
+      }
+
+      this.transactions.splice(index, 1)
+
+      this.updateTotal()
+    },
+    updateIncome(income){
+      this.income += income
+
+      this.updateTotal()
+    },
+    updateExpense(expense){
+      this.expense += expense
+
+      this.updateTotal()
+    },
+    updateTotal(){
+      this.balance = this.income + this.expense
+    }
+  }
 };
 </script>
 
@@ -238,7 +287,7 @@ table tbody tr td:last-child {
 }
 
 table th {
-  background: #fff;
+  background: #f0f2f5;
 
   font-weight: 400;
   padding: 1rem 2rem;
@@ -269,6 +318,10 @@ td.income {
 
 td.expanse {
   color: #e92929;
+}
+
+td img {
+  cursor: pointer;
 }
 
 /* ======= FOOTER ========= */
