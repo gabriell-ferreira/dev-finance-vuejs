@@ -6,7 +6,7 @@
 
     <main class="container">
       <section id="balance">
-        <h2 class="sr-only">Balanço</h2>
+        <h2 class="sr-only">Balanço </h2>
 
         <div class="card">
           <h3>
